@@ -13,11 +13,18 @@ var url = "https://gist.githubusercontent.com/mbostock/4090846/raw/d534aba169207
 d3.json(url, function(error, us) {
   if (error) throw error;
 
-  var states = topojson.feature(us, us.objects.states);
+  var nation = topojson.mesh(us, us.objects.states, function(a, b) { return a === b; });
+  var states = topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; });
 
-  svg.selectAll('.state')
-      .data(states.features)
-    .enter().append("path")
-      .attr("stroke-width", 0.5)
-      .attr("d", path);
+  svg.append('path')
+      .datum(nation)
+      .attr('class', 'nation')
+      .attr('stroke-width', 0.5)
+      .attr('d', path);
+
+  svg.append('path')
+      .datum(states)
+      .attr('class', 'state')
+      .attr('stroke-width', 0.5)
+      .attr('d', path);
 });
