@@ -7,7 +7,10 @@ var svg = d3.select('body').append('svg')
   .style('fill', 'none')
   .attr('stroke', 'black');
 
-var path = d3.geo.path();
+var projection = d3.geo.albers();
+
+var path = d3.geo.path()
+    .projection(projection);
 
 var url = "https://gist.githubusercontent.com/mbostock/4090846/raw/d534aba169207548a8a3d670c9c2cc719ff05c47/us.json"
 d3.json(url, function(error, us) {
@@ -27,4 +30,16 @@ d3.json(url, function(error, us) {
       .attr('class', 'state')
       .attr('stroke-width', 0.5)
       .attr('d', path);
+});
+
+d3.csv('airports.csv', function(data) {
+  svg.selectAll('.airport')
+      .data(data)
+    .enter().append('circle')
+      .attr('class', 'airport')
+      .attr('cx', function(d) { return projection([d['longitude'], d['latitude']])[0]; })
+      .attr('cy', function(d) { return projection([d['longitude'], d['latitude']])[1]; })
+      .attr('r', '1px')
+    .append('title')
+      .text(function(d) { return d['code'] + ' - ' + d['name']; });
 });
