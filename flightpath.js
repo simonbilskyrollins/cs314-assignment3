@@ -6,6 +6,9 @@ var svg = d3.select('body').append('svg')
   .attr('height', 600)
   .style('fill', 'none');
 
+var basemap = svg.append('g');
+var content = svg.append('g');
+
 var projection = d3.geo.albers();
 
 var path = d3.geo.path()
@@ -19,28 +22,32 @@ var tooltip = d3.select('body').append('div')
                   .attr('class', 'tooltip')
                   .style('opacity', 0);
 
+// Draw basemap
 var url = "https://gist.githubusercontent.com/mbostock/4090846/raw/d534aba169207548a8a3d670c9c2cc719ff05c47/us.json"
 d3.json(url, function(error, us) {
   if (error) throw error;
 
+  // Select just the outer border of the US
   var nation = topojson.mesh(us, us.objects.states, function(a, b) { return a === b; });
+  // Select interior state boundaries
   var states = topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; });
 
-  svg.append('path')
+  basemap.append('path')
       .datum(nation)
       .attr('class', 'nation')
       .attr('stroke-width', 0.5)
       .attr('d', path);
 
-  svg.append('path')
+  basemap.append('path')
       .datum(states)
       .attr('class', 'state')
       .attr('stroke-width', 0.5)
       .attr('d', path);
 });
 
+// Load airport data and plot them on the map as points
 d3.csv('airports.csv', function(data) {
-  svg.selectAll('.airport')
+  content.selectAll('.airport')
       .data(data)
     .enter().append('circle')
       .attr('class', 'airport')
@@ -65,19 +72,18 @@ d3.csv('airports.csv', function(data) {
         tooltip.transition()
           .duration(2000)
           .style('opacity', 0);
-      })
-    .append('title')
-      .text(function(d) { return d['code'] + ' - ' + d['name']; });
+      });
 
+  // Load on-time data and plot flight paths of one airplane
   d3.csv('ontime.csv', function(data) {
     flightpaths = [];
     plane = 'N836DN';
     data.filter(function(flight) { return flight.TailNum === plane; })
         .forEach(function(flight) {
-          origin = svg.select('#' + flight.Origin);
+          origin = content.select('#' + flight.Origin);
           origin.attr('class', 'airport-visible');
           origin.attr('r', '4px');
-          dest = svg.select('#' + flight.Dest);
+          dest = content.select('#' + flight.Dest);
           dest.attr('class', 'airport-visible');
           dest.attr('r', '4px');
           flightpaths.push({
@@ -95,7 +101,7 @@ d3.csv('airports.csv', function(data) {
             }
           });
     });
-    svg.selectAll('.flightpath')
+    content.selectAll('.flightpath')
         .data(flightpaths)
       .enter().append('path')
         .attr('class', 'flightpath')
@@ -118,19 +124,20 @@ d3.csv('airports.csv', function(data) {
             .duration(2000)
             .style('opacity', 0);
         });
-    reorder();
   });
 });
 
 // Move circles to front
-function reorder () {
-  svg.selectAll('path, circle').sort(function(d1, d2) {
-    if (d1.type === d2.type) {
+function reorder() {
+  content.selectAll('path, circle').sort(function(d1, d2) {
+    if (d1.path === d2.path) {
       return 0;
-    } else if (d1.type === 'circle') {
+    } else if (d1.path === null) {
       return 1;
     } else {
       return -1;
     }
   });
 }
+
+reorder();
