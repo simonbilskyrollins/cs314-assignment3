@@ -37,9 +37,35 @@ d3.csv('airports.csv', function(data) {
       .data(data)
     .enter().append('circle')
       .attr('class', 'airport')
-      .attr('cx', function(d) { return projection([d['longitude'], d['latitude']])[0]; })
-      .attr('cy', function(d) { return projection([d['longitude'], d['latitude']])[1]; })
+      .attr('id', function(d) { return d.code; })
+      .attr('long', function(d) { return d.longitude; })
+      .attr('lat', function(d) { return d.latitude; })
+      .attr('cx', function(d) { return projection([d.longitude, d.latitude])[0]; })
+      .attr('cy', function(d) { return projection([d.longitude, d.latitude])[1]; })
       .attr('r', '1px')
     .append('title')
       .text(function(d) { return d['code'] + ' - ' + d['name']; });
+});
+
+d3.csv('ontime.csv', function(data) {
+  flightpaths = [];
+  plane = 'N917DE';
+  data.filter(function(flight) { return flight.TailNum === plane; })
+      .forEach(function(flight) {
+        origin = svg.select('#' + flight.Origin);
+        dest = svg.select('#' + flight.Dest);
+        flightpaths.push({
+          type: 'LineString',
+          coordinates: [
+            [origin.attr('long'), origin.attr('lat')],
+            [dest.attr('long'), dest.attr('lat')]
+          ]
+        });
+  });
+  svg.selectAll('.flightpath')
+      .data(flightpaths)
+    .enter().append('path')
+      .attr('class', 'flightpath')
+      .attr('stroke-width', 0.5)
+      .attr('d', path);
 });
