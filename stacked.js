@@ -74,7 +74,7 @@ d3.csv("ontime_by_airport.csv", type, function(data) {
       .on('mouseover', function(d) {
         tooltip.transition()
           .style('opacity', 0.9);
-        tooltip.html(d.delay_type + ': ' + '<br>' + d.y)
+        tooltip.html(d.delay_type + ': ' + '<br>' + d.y + ' minutes')
           .style('left', (d3.event.pageX) + 'px')
           .style('top', (d3.event.pageY - 42) + 'px');
       })
