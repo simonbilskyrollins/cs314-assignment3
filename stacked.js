@@ -15,7 +15,11 @@ var x = d3.scale.ordinal()
 var y = d3.scale.linear()
   .rangeRound([height, 0]);
 
-var color = d3.scale.category10();
+var color = d3.scale.ordinal().range(
+  ["#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3"] //Set3
+  //["#1b9e77", "#d95f02","#7570b3", "#e7298a", "#66a61e"] //Dark2
+);
+
 
 var xAxis = d3.svg.axis()
   .scale(x)
@@ -37,6 +41,7 @@ var svg = d3.select("body").append("svg")
 
 d3.csv("ontime_by_airport.csv", type, function(data) {
 
+  data.sort(function(a, b) { return b.TotalDelay - a.TotalDelay; });
   // filter to only relevant, large airports
   var delay_data = data.filter(function(data){
     if(airports.includes(data.Origin)) return data.Origin;
