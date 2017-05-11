@@ -41,7 +41,7 @@ var svg = d3.select("body").append("svg")
 
 d3.csv("ontime_by_airport.csv", type, function(data) {
 
-  data.sort(function(a, b) { return b.TotalDelay - a.TotalDelay; });
+  //data.sort(function(a, b) { return b.TotalDelay - a.TotalDelay; });
   // filter to only relevant, large airports
   var delay_data = data.filter(function(data){
     if(airports.includes(data.Origin)) return data.Origin;
@@ -57,7 +57,8 @@ d3.csv("ontime_by_airport.csv", type, function(data) {
 
   // domain is made up of each x-element by name
   x.domain(layers[0].map(function(d) { return d.x; }));
-  y.domain([0, 280000]).nice();
+  // domain is made up of max y-value from all the layers summed together
+  y.domain([0, d3.max(layers[layers.length - 1], function(d) { return d.y0 + d.y; })]).nice();
 
   var layer = svg.selectAll(".layer")
       .data(layers)
@@ -68,6 +69,7 @@ d3.csv("ontime_by_airport.csv", type, function(data) {
   layer.selectAll("rect")
       .data(function(d) { return d; })
     .enter().append("rect")
+      .attr('class', 'bar')
       .attr("x", function(d) { return x(d.x) + 5; })
       // where y0 is the end height of the previous slice of data
       // i.e. where one data chunk ends and the next should begin
@@ -94,7 +96,7 @@ d3.csv("ontime_by_airport.csv", type, function(data) {
       });
 
   svg.append("g")
-      .attr("class", "axis")
+      .attr("class", "xaxis")
       .attr("transform", "translate(0," + height + ")")
       .call(xAxis)
       .append('text')
@@ -104,7 +106,7 @@ d3.csv("ontime_by_airport.csv", type, function(data) {
         .text('Origin Airport');
 
   svg.append("g")
-      .attr("class", "axis")
+      .attr("class", "yaxis")
       .call(yAxis)
       .append('text')
         .attr('class', 'title')
@@ -120,7 +122,7 @@ d3.csv("ontime_by_airport.csv", type, function(data) {
     //placing legend rect locations: height/width of 15, so shift
     //  down by 15px for each element of the legend
     .enter().append("g")
-      .attr("transform", function(d, i) { return "translate(0," + i * 15 + ")"; });
+      .attr("transform", function(d, i) { return "translate(0," + (50 - i * 15) + ")"; });
 
   legend.append('text')
       .attr('x', width - 18)
@@ -142,6 +144,26 @@ d3.csv("ontime_by_airport.csv", type, function(data) {
       .attr("height", 14)
       .attr("fill", function(d, i) { return color(i); });
 
+  d3.select("input").on("change", change);
+
+    function change() {
+
+      // Copy-on-write since tweens are evaluated after a delay.
+      var x0 = x.domain(delay_data.sort(this.checked
+          ? function(a, b) { return b.TotalDelay - a.TotalDelay; }
+          : function(a, b) { return d3.ascending(a.Origin, b.Origin); })
+          .map(function(d) { return d.Origin; }))
+          .copy();
+
+      var transition = svg.transition().duration(1000);
+
+      transition.selectAll(".bar")
+          .attr("x", function(d) { return x0(d.x); });
+
+      transition.select(".xaxis")
+          .call(xAxis)
+        .selectAll("g")
+    }
 });
 
 function type(d) {
