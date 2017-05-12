@@ -70,15 +70,33 @@ d3.csv('airports.csv', function(data) {
       })
       .on('mouseout', function(d) {
         tooltip.transition()
-          .duration(2000)
+          .duration(200)
           .style('opacity', 0);
       });
+  plotFlightpaths();
+});
 
-  // Load on-time data and plot flight paths of one airplane
+// Load on-time data and plot flight paths of one airplane
+function plotFlightpaths(plane) {
   d3.csv('ontime.csv', function(data) {
-    flightpaths = [];
-    plane = 'N836DN';
+    var flightpaths = [];
+    if (!plane) {
+      plane = randomPlane(data);
+    }
+    plane = 'N962DL';
+    document.getElementById('plane').innerHTML = plane;
     data.filter(function(flight) { return flight.TailNum === plane; })
+        .sort(function(a,b) {
+          aDate = new Date(a.FlightDate);
+          bDate = new Date(b.FlightDate);
+          aTime = parseInt(a.DepTime);
+          bTime = parseInt(b.DepTime);
+          if (aDate.getTime() === bDate.getTime()) {
+            return aTime - bTime;
+          } else {
+            return aDate - bDate;
+          }
+        })
         .forEach(function(flight) {
           origin = content.select('#' + flight.Origin);
           origin.attr('class', 'airport-visible');
@@ -101,9 +119,11 @@ d3.csv('airports.csv', function(data) {
             }
           });
     });
-    content.selectAll('.flightpath')
-        .data(flightpaths)
-      .enter().append('path')
+
+    var flightpath = content.selectAll('.flightpath')
+        .data(flightpaths);
+
+    flightpath.enter().append('path')
         .attr('class', 'flightpath')
         .attr('stroke-width', 2)
         .style('stroke', function(d) { return scale(d.delay); })
@@ -124,12 +144,30 @@ d3.csv('airports.csv', function(data) {
             .duration(2000)
             .style('opacity', 0);
         });
+
+    // Animate drawing of each flightpath
+    flightpath
+        .attr('stroke-dasharray', function() {
+          var totalLength = this.getTotalLength();
+          return totalLength + ' ' + totalLength;
+        })
+        .attr('stroke-dashoffset', function() {
+          var totalLength = this.getTotalLength();
+          return totalLength;
+        })
+        .transition()
+          .duration(250)
+          .delay(function(d, i) { return i * 250; })
+          .ease('linear')
+          .attr('stroke-dashoffset', 0);
+    flightpath.exit().remove();
+    reorder();
   });
-});
+}
 
 // Move circles to front
 function reorder() {
-  content.selectAll('path, circle').sort(function(d1, d2) {
+  content.selectAll('path, .airport-visible').sort(function(d1, d2) {
     if (d1.path === d2.path) {
       return 0;
     } else if (d1.path === null) {
@@ -140,4 +178,8 @@ function reorder() {
   });
 }
 
-reorder();
+function randomPlane(data) {
+  i = Math.floor(Math.random() * (data.length + 1));
+  plane = data[i].TailNum;
+  return plane;
+}
