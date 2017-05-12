@@ -7,6 +7,10 @@
   <script src="http://d3js.org/d3.v3.js" charset="utf-8"></script>
   <script src="https://d3js.org/topojson.v1.js"></script>
   <style type="text/css">
+    body {
+      background-color: #666;
+      color:white
+    }
     .xaxis text {
       font: 10px sans-serif;
     }
@@ -14,7 +18,7 @@
     .xaxis line,
     .xaxis path {
       fill: none;
-      stroke: #000;
+      stroke: white;
       shape-rendering: crispEdges;
     }
 
@@ -31,7 +35,7 @@
     .yaxis line,
     .yaxis path {
       fill: none;
-      stroke: #000;
+      stroke: white;
       shape-rendering: crispEdges;
     }
 
@@ -43,8 +47,7 @@
 
     .legend {
       font-family: serif;
-      font-size: 12px
-
+      font-size: 12px;
     }
 
     div.tooltip {
@@ -62,17 +65,34 @@
 
   </style>
 </head>
-<select id="sortvals">
-  <option value="Origin">Origin Airport</option>
-  <option value="TotalDelay">Total Delay</option>
-  <option value="LateAircraftDelay">Late Aircraft Delay</option>
-  <option value="SecurityDelay">Security Delay</option>
-  <option value="NASDelay">NAS Delay</option>
-  <option value="WeatherDelay">Weather Delay</option>
-  <option value="CarrierDelay">Carrier Delay</option>
-</select>
 <body>
   <script type="text/javascript" src="stacked.js"></script>
+  <form>
+    <input id="check1" type="checkbox">Normalize Values<br>
+    <select id="sortvals">
+      <option value="Origin">Origin Airport</option>
+      <option value="TotalDelay">Total Delay</option>
+      <option value="LateAircraftDelay">Late Aircraft Delay</option>
+      <option value="SecurityDelay">Security Delay</option>
+      <option value="NASDelay">NAS Delay</option>
+      <option value="WeatherDelay">Weather Delay</option>
+      <option value="CarrierDelay">Carrier Delay</option>
+      <option value="Origin">Origin Airport</option>
+      <option value="TotalDelay">Total Delay</option>
+      <option value="LateAircraftDelay">Late Aircraft Delay</option>
+      <option value="SecurityDelay">Security Delay</option>
+      <option value="NASDelay">NAS Delay</option>
+    </select>
+    <select id="sortvals">
+      <option value="Origin">Origin Airport</option>
+      <option value="TotalDelay">Total Delay</option>
+      <option value="LateAircraftDelay">Late Aircraft Delay</option>
+      <option value="SecurityDelay">Security Delay</option>
+      <option value="NASDelay">NAS Delay</option>
+      <option value="WeatherDelay">Weather Delay</option>
+      <option value="CarrierDelay">Carrier Delay</option>
+    </select>
+  </form>
 </body>
 
 </html>
