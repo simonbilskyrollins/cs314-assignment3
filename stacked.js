@@ -169,20 +169,34 @@ d3.csv("total_aggregation.csv", type, function(data) {
     var x0 = x.domain(delay_data.sort(function(a, b){
         if(d3.select('#sortvals').node().value === 'TotalDelay')
         { return b.TotalDelay - a.TotalDelay; }
-        else if(d3.select('#sortvals').node().value === 'LateAircraftDelay')
-        { return b.LateAircraftDelay - a.LateAircraftDelay; }
-        else if(d3.select('#sortvals').node().value === 'SecurityDelay')
-        { return b.SecurityDelay - a.SecurityDelay; }
-        else if(d3.select('#sortvals').node().value === 'NASDelay')
-        { return b.NASDelay - a.NASDelay; }
-        else if(d3.select('#sortvals').node().value === 'WeatherDelay')
-        { return b.WeatherDelay - a.WeatherDelay; }
-        else if(d3.select('#sortvals').node().value === 'CarrierDelay')
-        { return b.CarrierDelay - a.CarrierDelay; }
+        else if(d3.select('#sortvals').node().value === 'DL')
+        { return b.DLdelay - a.DLdelay; }
+        else if(d3.select('#sortvals').node().value === 'EV')
+        { return b.EVdelay - a.EVdelay; }
+        else if(d3.select('#sortvals').node().value === 'OO')
+        { return b.OOdelay - a.OOdelay; }
+        else if(d3.select('#sortvals').node().value === 'AA')
+        { return b.AAdelay - a.AAdelay; }
+        else if(d3.select('#sortvals').node().value === 'AS')
+        { return b.ASdelay - a.ASdelay; }
+        else if(d3.select('#sortvals').node().value === 'B6')
+        { return b.B6delay - a.B6delay; }
+        else if(d3.select('#sortvals').node().value === 'F9')
+        { return b.F9delay - a.F9delay; }
+        else if(d3.select('#sortvals').node().value === 'HA')
+        { return b.HAdelay - a.HAdelay; }
+        else if(d3.select('#sortvals').node().value === 'NK')
+        { return b.NKdelay - a.NKdelay; }
+        else if(d3.select('#sortvals').node().value === 'UA')
+        { return b.UAdelay - a.UAdelay; }
+        else if(d3.select('#sortvals').node().value === 'VX')
+        { return b.VXdelay - a.VXdelay; }
+        else if(d3.select('#sortvals').node().value === 'WN')
+        { return b.WNdelay - a.WNdelay; }
         else{ return d3.ascending(a.Origin, b.Origin); }
       }).map(function(d) { return d.Origin; }))
         .copy();
-
+        
         var transition = svg.transition().duration(1000);
 
         transition.selectAll(".bar")
