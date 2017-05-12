@@ -1,6 +1,11 @@
 // CS 314 Assignment 3, Spring 2017
 // Simon Bilsky-Rollins and Barr Iserloth
 
+var legend = d3.select('#legend').append('svg')
+  .attr('width', 960)
+  .attr('height', 44)
+  .style('fill', 'none');
+
 var svg = d3.select('body').append('svg')
   .attr('width', 960)
   .attr('height', 600)
@@ -14,17 +19,44 @@ var projection = d3.geo.albers();
 var path = d3.geo.path()
     .projection(projection);
 
+// Create diverging green-pink color scale centered on 0 minute delay
+var delayBins = [-30, -15, 0, 15, 30, 60, 120];
+var colors = ["#4d9221", "#a1d76a", "#f7f7f7", "#fde0ef", "#f1b6da", "#de77ae", "#c51b7d"];
+var legendData = delayBins.map(function(d, i) {
+	return {delay: d, color: colors[i]};
+});
 var scale = d3.scale.linear()
-    .domain([-60, -30, 0, 30, 60, 120, 240])
-    .range(["#d73027","#fc8d59","#fee090","#ffffbf","#e0f3f8","#91bfdb","#4575b4"].reverse());
+    .domain(delayBins)
+    .range(colors);
 
+// Create legend, with one box for each color defined above
+legend.selectAll('rect')
+    .data(legendData)
+  .enter().append('rect')
+    .attr('x', function(d, i) { return 375 + i * 30; })
+    .attr('y', 6)
+    .attr('width', 30)
+    .attr('height', 18)
+    .style('fill', function(d) { return d.color; });
+
+// Annotate legend with delay values associated with each color
+legend.selectAll('text')
+    .data(legendData)
+  .enter().append('text')
+    .attr('x', function(d, i) { return 390 + i * 30; })
+    .attr('y', 36)
+    .attr('text-anchor', 'middle')
+    .style('fill', '#ddd')
+    .text(function(d) { return d.delay; });
+
+// Create tooltip
 var tooltip = d3.select('body').append('div')
                   .attr('class', 'tooltip')
                   .style('opacity', 0);
 
 // Draw basemap
-var url = "https://gist.githubusercontent.com/mbostock/4090846/raw/d534aba169207548a8a3d670c9c2cc719ff05c47/us.json"
-d3.json(url, function(error, us) {
+// TopoJSON from https://gist.githubusercontent.com/mbostock/4090846/raw/d534aba169207548a8a3d670c9c2cc719ff05c47/us.json
+d3.json('us.json', function(error, us) {
   if (error) throw error;
 
   // Select just the outer border of the US
@@ -78,14 +110,28 @@ d3.csv('airports.csv', function(data) {
 
 // Load on-time data and plot flight paths of one airplane
 function plotFlightpaths(plane) {
-  d3.csv('ontime.csv', function(data) {
+  // Reset all airport styling
+  content.selectAll('.airport-visible')
+      .attr('class', 'airport')
+      .attr('r', '2px');
+
+  d3.csv('flights.csv', function(data) {
     var flightpaths = [];
-    if (!plane) {
-      plane = randomPlane(data);
-    }
-    plane = 'N962DL';
-    document.getElementById('plane').innerHTML = plane;
+
+    // Filter dataset by airline if one has been chosen in the dropdown menu
+    data = data.filter(function(flight) {
+      var carrier = d3.select('#carrier').node().value;
+      if (carrier) { return flight.Carrier === carrier; }
+      else { return true; }
+    });
+    if (!plane) { plane = randomPlane(data); }
+
+    // Update plane input with the plane we'll be looking at
+    d3.select('#plane').node().value = plane;
+
+    // Filter the dataset down to just flights involving our plane
     data.filter(function(flight) { return flight.TailNum === plane; })
+        // Sort in order of increasing date and time
         .sort(function(a,b) {
           aDate = new Date(a.FlightDate);
           bDate = new Date(b.FlightDate);
@@ -97,6 +143,8 @@ function plotFlightpaths(plane) {
             return aDate - bDate;
           }
         })
+        // Make visible each airport that our plane flies into and out of,
+        // and add those airports' coordinates to the flightpaths
         .forEach(function(flight) {
           origin = content.select('#' + flight.Origin);
           origin.attr('class', 'airport-visible');
@@ -120,9 +168,20 @@ function plotFlightpaths(plane) {
           });
     });
 
+    // Bind new data to path elements
     var flightpath = content.selectAll('.flightpath')
         .data(flightpaths);
 
+    // Remove unneeded paths
+    flightpath.exit().remove();
+
+    // Update remaining paths with new routes
+    flightpath
+        .attr('stroke-width', 10)
+        .style('stroke', function(d) { return scale(d.delay); })
+        .attr('d', function(d) { return path(d.path); })
+
+    // Draw new paths if necessary
     flightpath.enter().append('path')
         .attr('class', 'flightpath')
         .attr('stroke-width', 10)
@@ -141,7 +200,7 @@ function plotFlightpaths(plane) {
         })
         .on('mouseout', function(d) {
           tooltip.transition()
-            .duration(2000)
+            .duration(1000)
             .style('opacity', 0);
         });
 
@@ -162,7 +221,8 @@ function plotFlightpaths(plane) {
           .attr('stroke-dashoffset', 0)
         .transition()
           .attr('stroke-width', 2);
-    flightpath.exit().remove();
+
+    // Make sure that newly-drawn flightpaths have not hidden airports
     reorder();
   });
 }
@@ -197,8 +257,15 @@ function reorder() {
   });
 }
 
+// Pick a random plane from the dataset
 function randomPlane(data) {
   i = Math.floor(Math.random() * (data.length + 1));
   plane = data[i].TailNum;
   return plane;
+}
+
+// Plot flightpaths of a specific plane if that button is clicked
+function getSpecificPlane() {
+  var plane = d3.select('#plane').node().value;
+  plotFlightpaths(plane);
 }

@@ -8,10 +8,23 @@
   <script src="https://d3js.org/topojson.v1.js"></script>
   <style type="text/css">
     body {
+      width: 960px;
       background-color: #222;
       font-family: sans-serif;
-      font-size: 11px;
-      color: white;
+      font-size: 12px;
+      color: #eee;
+    }
+
+    .top {
+      width: 100%;
+      text-align: center;
+      margin: 4px;
+    }
+
+    #legend {
+      color: #ddd;
+      margin-top: 10px;
+      margin-bottom: -36px;
     }
 
     .nation {
@@ -55,9 +68,34 @@
 </head>
 
 <body>
-  <div id="control">
+  <div class="top" id="heading">
+    <h2>Routes Flown by One Airplane in One Month</h2>
+  </div>
+  <div class="top">
+    <span>Filter by airline:</span>
+    <select id="carrier">
+      <option value="">Any</option>
+      <option value="AS">Alaska</option>
+      <option value="AA">American</option>
+      <option value="DL">Delta</option>
+      <option value="EV">ExpressJet</option>
+      <option value="F9">Frontier</option>
+      <option value="HA">Hawaiian</option>
+      <option value="B6">JetBlue</option>
+      <option value="OO">SkyWest</option>
+      <option value="WN">Southwest</option>
+      <option value="NK">Spirit</option>
+      <option value="UA">United</option>
+      <option value="VX">Virgin</option>
+    </select>
     <button onclick="plotFlightpaths()">Random Plane</button>
-    <span id="plane"></span>
+  </div>
+  <div class="top">
+    <input type="text" name="plane" id="plane" size="7" maxLength="6">
+    <button onclick="getSpecificPlane()">Specific Plane</button>
+  </div>
+  <div class="top" id="legend">
+    <span>Delays, in minutes</span>
   </div>
   <script type="text/javascript" src="flightpath.js"></script>
 </body>
