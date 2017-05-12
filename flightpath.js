@@ -15,8 +15,8 @@ var path = d3.geo.path()
     .projection(projection);
 
 var scale = d3.scale.linear()
-    .domain([-60, -30, 0, 60, 120])
-    .range(['#1a9641', '#a6d96a', '#ffffbf', '#fdae61', '#d7191c']);
+    .domain([-60, -30, 0, 30, 60, 120, 240])
+    .range(["#d73027","#fc8d59","#fee090","#ffffbf","#e0f3f8","#91bfdb","#4575b4"].reverse());
 
 var tooltip = d3.select('body').append('div')
                   .attr('class', 'tooltip')
@@ -125,7 +125,7 @@ function plotFlightpaths(plane) {
 
     flightpath.enter().append('path')
         .attr('class', 'flightpath')
-        .attr('stroke-width', 2)
+        .attr('stroke-width', 10)
         .style('stroke', function(d) { return scale(d.delay); })
         .attr('d', function(d) { return path(d.path); })
         .on('mouseover', function(d) {
@@ -156,24 +156,43 @@ function plotFlightpaths(plane) {
           return totalLength;
         })
         .transition()
-          .duration(250)
-          .delay(function(d, i) { return i * 250; })
+          .duration(200)
+          .delay(function(d, i) { return i * 200; })
           .ease('linear')
-          .attr('stroke-dashoffset', 0);
+          .attr('stroke-dashoffset', 0)
+        .transition()
+          .attr('stroke-width', 2);
     flightpath.exit().remove();
     reorder();
   });
 }
 
-// Move circles to front
+// Move visited airports to front and unused airports to back
 function reorder() {
   content.selectAll('path, .airport-visible').sort(function(d1, d2) {
-    if (d1.path === d2.path) {
+    path1 = false;
+    path2 = false;
+    if (d1.carrier) { path1 = true; }
+    if (d2.carrier) { path2 = true; }
+    if (path1 === path2) {
       return 0;
-    } else if (d1.path === null) {
+    } else if (path1 === false) {
       return 1;
     } else {
       return -1;
+    }
+  });
+  content.selectAll('path, .airport').sort(function(d1, d2) {
+    path1 = false;
+    path2 = false;
+    if (d1.carrier) { path1 = true; }
+    if (d2.carrier) { path2 = true; }
+    if (path1 === path2) {
+      return 0;
+    } else if (path1 === false) {
+      return -1;
+    } else {
+      return 1;
     }
   });
 }
