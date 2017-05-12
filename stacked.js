@@ -6,6 +6,9 @@ var delays = ["CarrierDelay", "WeatherDelay", "NASDelay",
 var airports = ['ORD', 'LAX', 'JFK', 'DFW', 'SFO', 'EWR', 'MSP',
 'ATL', 'DEN', 'LAS', 'CLT', 'MIA'];
 
+var airlines = ['DLdelay',	'EVdelay',	'OOdelay',	'AAdelay',	'ASdelay',
+	'B6delay', 'F9delay',	'HAdelay',	'NKdelay',	'UAdelay',	'VXdelay',	'WNdelay'];
+
 width = 1000;
 height = 500;
 
@@ -16,8 +19,10 @@ var y = d3.scale.linear()
   .rangeRound([height, 0]);
 
 var color = d3.scale.ordinal().range(
-  ["#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3"] //Set3
+  //["#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3"] //Set3
   //["#1b9e77", "#d95f02","#7570b3", "#e7298a", "#66a61e"] //Dark2
+  ['#a6cee3', '#1f78b4', '#b2df8a', '#33a02c', '#fb9a99', '#e31a1c',
+'#fdbf6f', '#ff7f00', '#cab2d6', '#6a3d9a', '#ffff99', '#b15928']
 );
 
 
@@ -39,7 +44,7 @@ var svg = d3.select("body").append("svg")
   .append("g")
     .attr("transform", "translate(" + 50 + "," + 50 + ")");
 
-d3.csv("ontime_by_airport.csv", type, function(data) {
+d3.csv("total_aggregation.csv", type, function(data) {
 
   //data.sort(function(a, b) { return b.TotalDelay - a.TotalDelay; });
   // filter to only relevant, large airports
@@ -49,7 +54,7 @@ d3.csv("ontime_by_airport.csv", type, function(data) {
 
   // map each delay type to a specific origin airport
   // also include the name of the delay type itself
-  var layers = d3.layout.stack()(delays.map(function(c) {
+  var layers = d3.layout.stack()(airlines.map(function(c) {
     return delay_data.map(function(d) {
         return {x: d.Origin, y: d[c], delay_type: c};
     });
@@ -64,7 +69,7 @@ d3.csv("ontime_by_airport.csv", type, function(data) {
       .data(layers)
     .enter().append("g")
       .attr("class", "layer")
-      .style("fill", function(d, i) { return color(i); });
+      .style("fill", function(d, i) { return color(i); })
 
   layer.selectAll("rect")
       .data(function(d) { return d; })
@@ -122,7 +127,7 @@ d3.csv("ontime_by_airport.csv", type, function(data) {
     //placing legend rect locations: height/width of 15, so shift
     //  down by 15px for each element of the legend
     .enter().append("g")
-      .attr("transform", function(d, i) { return "translate(0," + (50 - i * 15) + ")"; });
+      .attr("transform", function(d, i) { return "translate(0," + (50 - i * 8) + ")"; });
 
   legend.append('text')
       .attr('x', width - 18)
@@ -139,35 +144,41 @@ d3.csv("ontime_by_airport.csv", type, function(data) {
       });
 
   legend.append("rect")
-      .attr("x", width - 14)
-      .attr("width", 14)
-      .attr("height", 14)
+      .attr("x", width - 8)
+      .attr("width", 8)
+      .attr("height", 8)
       .attr("fill", function(d, i) { return color(i); });
 
-  d3.select("input").on("change", change);
+  d3.select("select").on("change", change);
 
-    function change() {
+  // framework for sorting behavior from here
+  // https://bl.ocks.org/mbostock/3885705
+  function change() {
+    var x0 = x.domain(delay_data.sort(function(a, b){
+        if(d3.select('#sortvals').node().value === 'TotalDelay'){ return b.TotalDelay - a.TotalDelay; }
+        else if(d3.select('#sortvals').node().value === 'LateAircraftDelay'){ return b.LateAircraftDelay - a.LateAircraftDelay; }
+        else if(d3.select('#sortvals').node().value === 'SecurityDelay'){ return b.SecurityDelay - a.SecurityDelay; }
+        else if(d3.select('#sortvals').node().value === 'NASDelay'){ return b.NASDelay - a.NASDelay; }
+        else if(d3.select('#sortvals').node().value === 'WeatherDelay'){ return b.WeatherDelay - a.WeatherDelay; }
+        else if(d3.select('#sortvals').node().value === 'CarrierDelay'){ return b.CarrierDelay - a.CarrierDelay; }
+        else{ return d3.ascending(a.Origin, b.Origin); }
+      }).map(function(d) { return d.Origin; }))
+        .copy();
 
-      // Copy-on-write since tweens are evaluated after a delay.
-      var x0 = x.domain(delay_data.sort(this.checked
-          ? function(a, b) { return b.TotalDelay - a.TotalDelay; }
-          : function(a, b) { return d3.ascending(a.Origin, b.Origin); })
-          .map(function(d) { return d.Origin; }))
-          .copy();
+        var transition = svg.transition().duration(1000);
 
-      var transition = svg.transition().duration(1000);
+        transition.selectAll(".bar")
+            .attr("x", function(d) { return x0(d.x); });
 
-      transition.selectAll(".bar")
-          .attr("x", function(d) { return x0(d.x); });
-
-      transition.select(".xaxis")
-          .call(xAxis)
-        .selectAll("g")
+        transition.select(".xaxis")
+            .call(xAxis)
+          .selectAll("g")
     }
 });
 
 function type(d) {
   d.Origin = d.Origin;
   delays.forEach(function(c) { d[c] = +d[c]; });
+  airlines.forEach(function(c) { d[c] = +d[c]; });
   return d;
 }
