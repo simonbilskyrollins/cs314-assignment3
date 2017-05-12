@@ -196,7 +196,7 @@ d3.csv("total_aggregation.csv", type, function(data) {
         else{ return d3.ascending(a.Origin, b.Origin); }
       }).map(function(d) { return d.Origin; }))
         .copy();
-        
+
         var transition = svg.transition().duration(1000);
 
         transition.selectAll(".bar")
@@ -252,7 +252,7 @@ d3.csv("total_aggregation.csv", type, function(data) {
             tooltip.transition()
               .style('opacity', 0.9);
             if(checked){
-              tooltip.html(pickAirline(d) + ': ' + '<br>' + (d.y).toFixed(4) + '%')
+              tooltip.html(pickAirline(d) + ': ' + '<br>' + (d.y*100).toFixed(2) + '%')
                 .style('left', (d3.event.pageX) + 'px')
                 .style('top', (d3.event.pageY - 42) + 'px');
             }
