@@ -1,8 +1,5 @@
 //http://bl.ocks.org/d3noob/8952219
 
-var delays = ["CarrierDelay", "WeatherDelay", "NASDelay",
-"SecurityDelay", "LateAircraftDelay"];
-
 var airports = ['ORD', 'LAX', 'JFK', 'DFW', 'SFO', 'EWR', 'MSP',
 'ATL', 'DEN', 'LAS', 'CLT', 'MIA'];
 
@@ -19,8 +16,6 @@ var y = d3.scale.linear()
   .rangeRound([height, 0]);
 
 var color = d3.scale.ordinal().range(
-  //["#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3"] //Set3
-  //["#1b9e77", "#d95f02","#7570b3", "#e7298a", "#66a61e"] //Dark2
   ["#8dd3c7","#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9","#bc80bd","#ccebc5","#ffed6f"]
 );
 
@@ -120,7 +115,7 @@ d3.csv("total_aggregation.csv", type, function(data) {
         .attr('class', 'title')
         .attr('x', -45)
         .attr('y', -15)
-        .text('Delay (Minutes)');
+        .text('Delay');
 
   var legend = svg.append("g")
       .attr('class', 'legend')
@@ -314,7 +309,6 @@ d3.csv("total_aggregation.csv", type, function(data) {
 
 function type(d) {
   d.Origin = d.Origin;
-  delays.forEach(function(c) { d[c] = +d[c]; });
   airlines.forEach(function(c) { d[c] = +d[c]; });
   return d;
 }
